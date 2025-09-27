@@ -343,13 +343,41 @@ export default class AutoLinkTitle extends Plugin {
       console.log(`Title via Link Preview: ${title}`);
 
       if (title === "") {
-        console.log("Title via Link Preview failed, falling back to scraper");
-        if (this.settings.useNewScraper) {
-          console.log("Using new scraper");
-          title = await getPageTitle(url);
-        } else {
-          console.log("Using old scraper");
-          title = await getElectronPageTitle(url);
+        console.log("Title via Link Preview failed, falling back to other methods");
+
+        // Check if YouTube video and DeArrow is enabled
+        const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/);
+        if (this.settings.useDeArrow && youtubeMatch) {
+          const videoID = youtubeMatch[1];
+          console.log(`Detected YouTube video ID: ${videoID}, trying DeArrow`);
+          try {
+            const dearrowResponse = await fetch(`https://dearrow.ajay.app/api/branding?videoID=${encodeURIComponent(videoID)}&service=YouTube`);
+            if (dearrowResponse.ok) {
+              const dearrowData = await dearrowResponse.json();
+              const trustedTitle = dearrowData.titles.find((t: any) => t.locked || t.votes >= 0);
+              if (trustedTitle) {
+                title = trustedTitle.title.replace(/>/g, '').trim();
+                console.log(`DeArrow title: ${title}`);
+              } else {
+                console.log("No trusted DeArrow title available");
+              }
+            } else {
+              console.log("DeArrow API request failed");
+            }
+          } catch (dearrowError) {
+            console.error("DeArrow fetch error:", dearrowError);
+          }
+        }
+
+        if (title === "") {
+          console.log("DeArrow failed or not applicable, falling back to scraper");
+          if (this.settings.useNewScraper) {
+            console.log("Using new scraper");
+            title = await getPageTitle(url);
+          } else {
+            console.log("Using old scraper");
+            title = await getElectronPageTitle(url);
+          }
         }
       }
 

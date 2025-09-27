@@ -16,6 +16,7 @@ export interface AutoLinkTitleSettings {
   useNewScraper: boolean;
   linkPreviewApiKey: string;
   useBetterPasteId: boolean;
+  useDeArrow: boolean;
 }
 
 export const DEFAULT_SETTINGS: AutoLinkTitleSettings = {
@@ -36,6 +37,7 @@ export const DEFAULT_SETTINGS: AutoLinkTitleSettings = {
   useNewScraper: false,
   linkPreviewApiKey: "",
   useBetterPasteId: false,
+  useDeArrow: false,
 };
 
 export class AutoLinkTitleSettingTab extends PluginSettingTab {
@@ -171,6 +173,21 @@ export class AutoLinkTitleSettingTab extends PluginSettingTab {
             } else {
               this.plugin.settings.linkPreviewApiKey = trimmedValue;
             }
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Use DeArrow")
+      .setDesc(
+        "Fetch de-branded titles for YouTube videos using the DeArrow API (removes sponsorships/branding from titles)"
+      )
+      .addToggle((val) =>
+        val
+          .setValue(this.plugin.settings.useDeArrow)
+          .onChange(async (value) => {
+            console.log(value);
+            this.plugin.settings.useDeArrow = value;
             await this.plugin.saveSettings();
           })
       );
