@@ -346,7 +346,7 @@ export default class AutoLinkTitle extends Plugin {
         console.log("Title via Link Preview failed, falling back to other methods");
 
         // Check if YouTube video and DeArrow is enabled
-        const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/);
+        const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?)]+)/);
         if (this.settings.useDeArrow && youtubeMatch) {
           const videoID = youtubeMatch[1];
           console.log(`Detected YouTube video ID: ${videoID}, trying DeArrow`);
