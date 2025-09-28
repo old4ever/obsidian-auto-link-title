@@ -341,12 +341,16 @@ export default class AutoLinkTitle extends Plugin {
       let title = "";
 
       // Check if YouTube video and DeArrow is enabled - try DeArrow first for priority
-      const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/);
-      if (this.settings.useDeArrow && youtubeMatch) {
-        const videoID = youtubeMatch[1];
+      const urlObj = new URL(url);
+      let videoID: string | null = null;
+      if (urlObj.host === "youtube.com" || urlObj.host === "www.youtube.com") {
+        videoID = urlObj.searchParams.get("v");
+      }
+
+      if (this.settings.useDeArrow && videoID) {
         console.log(`Detected YouTube video ID: ${videoID}, trying DeArrow first`);
         try {
-          const dearrowResponse = await fetch(`https://dearrow.ajay.app/api/branding?videoID=${encodeURIComponent(videoID)}&service=YouTube`);
+          const dearrowResponse = await fetch(`https://sponsor.ajay.app/api/branding/?videoID=${encodeURIComponent(videoID)}`);
           if (dearrowResponse.ok) {
             const dearrowData = await dearrowResponse.json();
             const trustedTitle = dearrowData.titles.find((t: any) => t.locked || t.votes >= 0);
